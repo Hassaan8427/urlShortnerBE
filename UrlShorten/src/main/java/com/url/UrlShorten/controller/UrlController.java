@@ -10,6 +10,7 @@ import com.url.UrlShorten.model.Payload.UrlRequest;
 import com.url.UrlShorten.service.UrlService;
 import javassist.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +28,8 @@ import java.util.Date;
 @RequestMapping(path = "/url/")
 public class UrlController {
 
+    @Value("${server.url}")
+    private String serverUrl;
     private final UrlService urlService;
 
     @Autowired
@@ -37,11 +40,13 @@ public class UrlController {
     @GetMapping(path = "{sUrl}")
     public ResponseEntity<?> goToUrl(@PathVariable String sUrl) throws URISyntaxException, ParseException {
 
-        Urls urls = urlService.findBysUrl(sUrl);
+        String sUrlWitReq = serverUrl + sUrl;
+
+        Urls urls = urlService.findBysUrl(sUrlWitReq);
         SimpleDateFormat formatter2 = new SimpleDateFormat("yyyy-MM-dd");
 
         if (formatter2.format(formatter2.parse(urls.getExpirydate())).compareTo(formatter2.format(new Date())) > 0) {
-            return ResponseEntity.status(HttpStatus.FOUND).location(URI.create(urlService.findBysUrl(sUrl).getUrl())).build();
+            return ResponseEntity.status(HttpStatus.FOUND).location(URI.create(urlService.findBysUrl(sUrlWitReq).getUrl())).build();
         } else
             return ResponseEntity.ok(new ResponseWrapper(false, "Url Expired", HttpStatus.INTERNAL_SERVER_ERROR.value()));
     }

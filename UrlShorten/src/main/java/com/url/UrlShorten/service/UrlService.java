@@ -49,9 +49,16 @@ public class UrlService {
         if (urlRepository.existsByUrl(urlRequest.getUrl())) {
             return Optional.ofNullable("Url Already Exists");
         }
+
+        String hashedUrl = Hashing.murmur3_32().hashString(urlRequest.getUrl(), StandardCharsets.UTF_8).toString();
         Urls urls = new Urls();
-        urls.setShorturl(serverUrl + Hashing.murmur3_32().hashString(urlRequest.getUrl(), StandardCharsets.UTF_8).toString());
-        urls.setUrl(urlRequest.getUrl());
+        urls.setShorturl(serverUrl + hashedUrl);
+        urls.setHashUrl(hashedUrl);
+        if (urlRequest.getUrl().contains("https://")) {
+            urls.setUrl(urlRequest.getUrl());
+        } else {
+            urls.setUrl("https://" + urlRequest.getUrl());
+        }
         urls.setExpirydate(urlRequest.getExpiryDate());
         urlRepository.save(urls);
         return Optional.ofNullable("Url added");
@@ -63,8 +70,9 @@ public class UrlService {
 
     public Optional<?> deleteUrl(String sUrl) throws NotFoundException {
 
-        if (urlRepository.existsByShorturl(sUrl)) {
-            Urls url = urlRepository.findByShorturl(sUrl);
+        String sUrlWitReq = serverUrl + sUrl;
+        if (urlRepository.existsByShorturl(sUrlWitReq)) {
+            Urls url = urlRepository.findByShorturl(sUrlWitReq);
             urlRepository.delete(url);
             return Optional.ofNullable("Url Deleted");
         } else {

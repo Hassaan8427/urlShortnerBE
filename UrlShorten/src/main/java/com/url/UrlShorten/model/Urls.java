@@ -37,7 +37,16 @@ public class Urls {
     private String url;
     @NotNull
     private String expirydate;
+    @NotNull
+    private String hashUrl;
 
+    public String getHashUrl() {
+        return hashUrl;
+    }
+
+    public void setHashUrl(String hashUrl) {
+        this.hashUrl = hashUrl;
+    }
 
     public String getShorturl() {
         return shorturl;
